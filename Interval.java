@@ -1,94 +1,263 @@
-import java.util.Map;
-import static java.util.Map.entry;
+public class Interval {
+    // Wrapper-Klasse für IntervalType - ermöglicht Abwärtskompatibilität
+    public final String shortName;
+    public final String interval;
+    public final String details;
+    public final double propCounter;
+    public final double propDenom;
+    public final double proportion;
+    public final IntervalType type;
 
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-
-public class Interval{
-    String shortName;
-    String interval;
-    String details = "";
-    double propCounter;
-    double propDenom;
-    double proportion;
-
-    Interval(String interval, String details, String shortName, double propCounter, double propDenom) {
-        
-        this.shortName = shortName;
-        this.interval = interval;
-        this.details = details;
-        this.propCounter = propCounter;
-        this.propDenom = propDenom;
-        this.proportion = propCounter / propDenom;
+    private Interval(IntervalType type) {
+        this.type = type;
+        this.shortName = type.getShortName();
+        this.interval = type.getDisplayName();
+        this.details = type.getDetails();
+        this.propCounter = type.getNumerator();
+        this.propDenom = type.getDenominator();
+        this.proportion = type.getRatio();
     }
-    // Based on:  https://anthrowiki.at/Intervall_(Musik)
-    static final Map<Integer, Interval> INTERVALS = Map.ofEntries(
-        entry(1, new Interval("Prim", "", "P", 1d, 1d)),
-        entry(2, new Interval("überm. Prim", "kleiner chromatischer Halbton", "P1", 24d, 25d)),
-        entry(3, new Interval("überm. Prim", "großer chromatischer Halbton", "P2", 135d, 128d)),
-        entry(4, new Interval("kl. Sekund", "Leimma (pythagoreische Stimmung)", "Sk1", 256d, 243d)),
-        entry(5, new Interval("kl. Sekund", "diatonischer Halbton (reine Stimmung)","Sk2", 16d, 15d)),
-        entry(6, new Interval("gr. Sekund", "kleiner Ganzton (reine Stimmung)","Sg1", 10d, 9d)),
-        entry(7, new Interval("gr. Sekund", "großer Ganzton (pyth. und reine Stimmung)","Sg2", 9d, 8d)),
-        entry(8, new Interval("kl. Terz", "kleine Terz (pythagoreische Stimmung)","Tk1", 32d, 27d)),
-        entry(9, new Interval("kl. Terz", "kleine Terz (reine Stimmung)","Tk2", 6d, 5d)),
-        entry(10, new Interval("gr. Terz","reine große Terz","Tg1", 5d, 4d)),
-        entry(11, new Interval("gr. Terz","Ditonus (pythagoreische Stimmung)","Tg2", 81d, 64d)),
-        entry(12, new Interval("Quarte", "reine Quarte","Qua", 4d, 3d)),
-        entry(13, new Interval("überm. Quarte", "Huygens' Tritonus","Qua2", 7d, 5d)),
-        entry(14, new Interval("überm. Quarte", "diatonischer Tritonus","Qua1", 45d, 32d)),
-        entry(15, new Interval("überm. Quarte", "pythagoreische Stimmung","Qua3", 729d, 512d)),
-        entry(16, new Interval("verm. Quinte", "pythagoreische Stimmung","Qui1", 1024d, 729d)),
-        entry(17, new Interval("verm. Quinte", "reine Stimmung","Qui2", 64d, 45d)),
-        entry(18, new Interval("verm. Quinte", "Eulers Tritonus","Qui3", 10d, 7d)),
-        entry(19, new Interval("Quinte", "reine Quinte","Qui", 3d,2d)),
-        entry(20, new Interval("kl. Sexte", "reine kleine Sexte","Sxk", 8d, 5d)),
-        entry(21, new Interval("gr. Sexte", "reine große Sexte","Sxg", 5d,3d)),
-        entry(22, new Interval("kl. Septime","pyth. und kleinere reine (Oktave - großer Ganzton)","Sepk1", 16d, 9d)),
-        entry(23, new Interval("kl. Septime","größere reine (Oktave - kleiner Ganzton)","Sepk2", 9d, 5d)),
-        entry(24, new Interval("kl. Septime","Naturseptime","Sepk3", 7d, 4d)),
-        entry(25, new Interval("gr. Septime", "diatonisch rein","Sepg", 15d,8d)),
-        entry(26, new Interval("Oktave", "reine Oktave","Ok", 2d, 1d))
-   );
 
+    // Factory-Methode
+    public static Interval of(IntervalType type) {
+        return new Interval(type);
+    }
+
+    // === SKALEN-INTERVALLE ===
+
+    // Dur (Ionisch)
     static final Interval[] majorIntervalsClean = {
-        INTERVALS.get(1),
-        INTERVALS.get(6),
-        INTERVALS.get(10),
-        INTERVALS.get(12),
-        INTERVALS.get(19),
-        INTERVALS.get(21),
-        INTERVALS.get(25),
-        INTERVALS.get(26)
+        of(IntervalType.UNISON),
+        of(IntervalType.MAJOR_SECOND_SMALL),
+        of(IntervalType.MAJOR_THIRD),
+        of(IntervalType.PERFECT_FOURTH),
+        of(IntervalType.PERFECT_FIFTH),
+        of(IntervalType.MAJOR_SIXTH),
+        of(IntervalType.MAJOR_SEVENTH),
+        of(IntervalType.OCTAVE)
     };
 
+    // Natürlich Moll (Äolisch)
     static final Interval[] minorIntervalsClean = {
-        INTERVALS.get(1),
-        INTERVALS.get(6),
-        INTERVALS.get(9),
-        INTERVALS.get(12),
-        INTERVALS.get(19), 
-        INTERVALS.get(20),
-        INTERVALS.get(25),
-        INTERVALS.get(26)
+        of(IntervalType.UNISON),
+        of(IntervalType.MAJOR_SECOND_SMALL),
+        of(IntervalType.MINOR_THIRD),
+        of(IntervalType.PERFECT_FOURTH),
+        of(IntervalType.PERFECT_FIFTH),
+        of(IntervalType.MINOR_SIXTH),
+        of(IntervalType.MINOR_SEVENTH_PYTHAGOREAN),
+        of(IntervalType.OCTAVE)
     };
 
+    // Dorisch
+    static final Interval[] dorianIntervals = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MAJOR_SECOND_SMALL),
+        of(IntervalType.MINOR_THIRD),
+        of(IntervalType.PERFECT_FOURTH),
+        of(IntervalType.PERFECT_FIFTH),
+        of(IntervalType.MAJOR_SIXTH),
+        of(IntervalType.MINOR_SEVENTH_PYTHAGOREAN),
+        of(IntervalType.OCTAVE)
+    };
+
+    // Phrygisch
+    static final Interval[] phrygianIntervals = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MINOR_SECOND),
+        of(IntervalType.MINOR_THIRD),
+        of(IntervalType.PERFECT_FOURTH),
+        of(IntervalType.PERFECT_FIFTH),
+        of(IntervalType.MINOR_SIXTH),
+        of(IntervalType.MINOR_SEVENTH_PYTHAGOREAN),
+        of(IntervalType.OCTAVE)
+    };
+
+    // Lydisch
+    static final Interval[] lydianIntervals = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MAJOR_SECOND_SMALL),
+        of(IntervalType.MAJOR_THIRD),
+        of(IntervalType.AUGMENTED_FOURTH),
+        of(IntervalType.PERFECT_FIFTH),
+        of(IntervalType.MAJOR_SIXTH),
+        of(IntervalType.MAJOR_SEVENTH),
+        of(IntervalType.OCTAVE)
+    };
+
+    // Mixolydisch
+    static final Interval[] mixolydianIntervals = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MAJOR_SECOND_SMALL),
+        of(IntervalType.MAJOR_THIRD),
+        of(IntervalType.PERFECT_FOURTH),
+        of(IntervalType.PERFECT_FIFTH),
+        of(IntervalType.MAJOR_SIXTH),
+        of(IntervalType.MINOR_SEVENTH_PYTHAGOREAN),
+        of(IntervalType.OCTAVE)
+    };
+
+    // Lokrisch
+    static final Interval[] locrianIntervals = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MINOR_SECOND),
+        of(IntervalType.MINOR_THIRD),
+        of(IntervalType.PERFECT_FOURTH),
+        of(IntervalType.DIMINISHED_FIFTH),
+        of(IntervalType.MINOR_SIXTH),
+        of(IntervalType.MINOR_SEVENTH_PYTHAGOREAN),
+        of(IntervalType.OCTAVE)
+    };
+
+    // Harmonisch Moll
+    static final Interval[] harmonicMinorIntervals = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MAJOR_SECOND_SMALL),
+        of(IntervalType.MINOR_THIRD),
+        of(IntervalType.PERFECT_FOURTH),
+        of(IntervalType.PERFECT_FIFTH),
+        of(IntervalType.MINOR_SIXTH),
+        of(IntervalType.MAJOR_SEVENTH),
+        of(IntervalType.OCTAVE)
+    };
+
+    // Melodisch Moll (aufwärts)
+    static final Interval[] melodicMinorIntervals = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MAJOR_SECOND_SMALL),
+        of(IntervalType.MINOR_THIRD),
+        of(IntervalType.PERFECT_FOURTH),
+        of(IntervalType.PERFECT_FIFTH),
+        of(IntervalType.MAJOR_SIXTH),
+        of(IntervalType.MAJOR_SEVENTH),
+        of(IntervalType.OCTAVE)
+    };
+
+    // Dur-Pentatonik
+    static final Interval[] pentatonicMajorIntervals = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MAJOR_SECOND_SMALL),
+        of(IntervalType.MAJOR_THIRD),
+        of(IntervalType.PERFECT_FIFTH),
+        of(IntervalType.MAJOR_SIXTH),
+        of(IntervalType.OCTAVE)
+    };
+
+    // Moll-Pentatonik
+    static final Interval[] pentatonicMinorIntervals = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MINOR_THIRD),
+        of(IntervalType.PERFECT_FOURTH),
+        of(IntervalType.PERFECT_FIFTH),
+        of(IntervalType.MINOR_SEVENTH_PYTHAGOREAN),
+        of(IntervalType.OCTAVE)
+    };
+
+    // Blues-Skala
+    static final Interval[] bluesIntervals = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MINOR_THIRD),
+        of(IntervalType.PERFECT_FOURTH),
+        of(IntervalType.DIMINISHED_FIFTH),
+        of(IntervalType.PERFECT_FIFTH),
+        of(IntervalType.MINOR_SEVENTH_PYTHAGOREAN),
+        of(IntervalType.OCTAVE)
+    };
+
+    // === AKKORD-INTERVALLE ===
+
+    // Dur-Dreiklang
+    static final Interval[] majorTriad = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MAJOR_THIRD),
+        of(IntervalType.PERFECT_FIFTH)
+    };
+
+    // Moll-Dreiklang
+    static final Interval[] minorTriad = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MINOR_THIRD),
+        of(IntervalType.PERFECT_FIFTH)
+    };
+
+    // Verminderter Dreiklang
+    static final Interval[] diminishedTriad = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MINOR_THIRD),
+        of(IntervalType.DIMINISHED_FIFTH)
+    };
+
+    // Übermäßiger Dreiklang
+    static final Interval[] augmentedTriad = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MAJOR_THIRD),
+        of(IntervalType.AUGMENTED_FIFTH)
+    };
+
+    // Dur-Septakkord (Maj7)
+    static final Interval[] majorSeventh = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MAJOR_THIRD),
+        of(IntervalType.PERFECT_FIFTH),
+        of(IntervalType.MAJOR_SEVENTH)
+    };
+
+    // Moll-Septakkord (Min7)
+    static final Interval[] minorSeventh = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MINOR_THIRD),
+        of(IntervalType.PERFECT_FIFTH),
+        of(IntervalType.MINOR_SEVENTH_PYTHAGOREAN)
+    };
+
+    // Dominantseptakkord (Dom7)
+    static final Interval[] dominantSeventh = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MAJOR_THIRD),
+        of(IntervalType.PERFECT_FIFTH),
+        of(IntervalType.MINOR_SEVENTH_PYTHAGOREAN)
+    };
+
+    // Verminderter Septakkord (Dim7)
+    static final Interval[] diminishedSeventh = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MINOR_THIRD),
+        of(IntervalType.DIMINISHED_FIFTH),
+        of(IntervalType.DIMINISHED_SEVENTH)
+    };
+
+    // Halbverminderter Septakkord (Min7b5)
+    static final Interval[] halfDiminishedSeventh = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MINOR_THIRD),
+        of(IntervalType.DIMINISHED_FIFTH),
+        of(IntervalType.MINOR_SEVENTH_PYTHAGOREAN)
+    };
+
+    // Moll-Dur-Septakkord (MinMaj7)
+    static final Interval[] minorMajorSeventh = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MINOR_THIRD),
+        of(IntervalType.PERFECT_FIFTH),
+        of(IntervalType.MAJOR_SEVENTH)
+    };
+
+    // Sus4-Akkord
+    static final Interval[] sus4 = {
+        of(IntervalType.UNISON),
+        of(IntervalType.PERFECT_FOURTH),
+        of(IntervalType.PERFECT_FIFTH)
+    };
+
+    // Sus2-Akkord
+    static final Interval[] sus2 = {
+        of(IntervalType.UNISON),
+        of(IntervalType.MAJOR_SECOND_SMALL),
+        of(IntervalType.PERFECT_FIFTH)
+    };
+
+    // Ausgabe aller Intervalle
     public static void printIntervals() {
-
-        StringWriter sw = new StringWriter();
-        for(Map.Entry<Integer, Interval> entry : INTERVALS.entrySet()) {
-            sw.append(String.format("%-5s", entry.getKey()) + "|" + String.format("%-5s", entry.getValue().shortName) + "|" + String.format("%-15s",entry.getValue().interval) + "|" + String.format("%-55s",entry.getValue().details) + "| " + String.format("%-15s",entry.getValue().propCounter + "/" +  entry.getValue().propDenom) + "| " + String.format("%-10s",entry.getValue().propCounter / entry.getValue().propDenom) );
-            sw.append("\n");
-        }
-        sw.append("\r\n");
-
-        String returnString = Helper.convertToCharset(sw.toString(), StandardCharsets.UTF_8);
-        System.out.println(returnString);
+        IntervalType.printAll();
     }
-
-     // dorian
-        // phrygian
-        // lydian
-        // mixolydian
-        // locrian
 }

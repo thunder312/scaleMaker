@@ -2,7 +2,6 @@ import java.nio.charset.Charset;
 
 public class Helper {
     public static String convertToCharset(String input, Charset charset) {
-        System.out.println("Input: " + input);
         byte[] bytes = input.getBytes(charset);
         String result = new String(bytes, charset);
 
