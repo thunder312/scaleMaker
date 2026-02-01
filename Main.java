@@ -1,60 +1,73 @@
+/**
+ * Demo-Klasse zur Demonstration der ScaleMaker-API.
+ *
+ * <p>Diese Klasse zeigt Beispiele für die Verwendung der Library.</p>
+ */
 public class Main {
     public static void main(String[] args) throws Exception {
 
-        System.out.println("=== SCALEMAKER DEMO ===\n");
-
-        // 1. Verfügbare Skalen anzeigen
-        ScaleType.printAll();
+        System.out.println("=== SCALEMAKER API DEMO ===");
+        System.out.println("Version: " + ScaleMaker.getVersion());
         System.out.println();
 
-        // 2. C-Dur Tonleiter
-        MusicalNote c = new MusicalNote("C");
-        Scale cMajor = new Scale(c, ScaleType.MAJOR);
-        cMajor.print();
+        // ==================== NOTEN ====================
+        System.out.println("--- Noten erstellen ---");
 
-        // 3. A-Moll Tonleiter (natürlich)
-        MusicalNote a = new MusicalNote("A");
-        Scale aMinor = new Scale(a, ScaleType.MINOR);
-        aMinor.print();
+        MusicalNote c = ScaleMaker.note("C");
+        System.out.println("C: " + c.getFrequency() + " Hz");
 
-        // 4. D-Dorisch
-        MusicalNote d = new MusicalNote("D");
-        Scale dDorian = new Scale(d, ScaleType.DORIAN);
-        dDorian.print();
+        MusicalNote a440 = ScaleMaker.note("A", 440.0);
+        System.out.println("A: " + a440.getFrequency() + " Hz");
 
-        // 5. Blues-Skala auf E
-        MusicalNote e = new MusicalNote("E");
-        Scale eBlues = new Scale(e, ScaleType.BLUES);
-        eBlues.print();
+        // ==================== TONLEITERN ====================
+        System.out.println("\n--- Tonleitern ---");
 
-        // 6. Akkorde
-        System.out.println("=== AKKORDE ===\n");
-        ChordType.printAll();
-        System.out.println();
+        Scale cDur = ScaleMaker.majorScale("C");
+        System.out.println(cDur + ": " + String.join(", ", cDur.getNoteNames()));
 
-        // C-Dur Dreiklang
-        Chord cMajorChord = new Chord(c, ChordType.MAJOR);
-        cMajorChord.print();
+        Scale aMinor = ScaleMaker.minorScale("A");
+        System.out.println(aMinor + ": " + String.join(", ", aMinor.getNoteNames()));
 
-        // A-Moll Dreiklang
-        Chord aMinorChord = new Chord(a, ChordType.MINOR);
-        aMinorChord.print();
+        Scale dDorian = ScaleMaker.scale("D", ScaleType.DORIAN);
+        System.out.println(dDorian + ": " + String.join(", ", dDorian.getNoteNames()));
 
-        // G7 Dominantseptakkord
-        MusicalNote g = new MusicalNote("G");
-        Chord g7 = new Chord(g, ChordType.DOMINANT_7);
-        g7.print();
+        // ==================== AKKORDE ====================
+        System.out.println("\n--- Akkorde ---");
 
-        // 7. Stufenakkorde aus einer Tonleiter
-        System.out.println("=== STUFENAKKORDE C-DUR ===\n");
-        for (int i = 1; i <= 7; i++) {
-            Chord triad = cMajor.getTriadOnDegree(i);
-            System.out.println("Stufe " + i + ": " + triad.getSymbol());
+        Chord cMajorChord = ScaleMaker.majorChord("C");
+        System.out.println(cMajorChord.getSymbol() + ": " + String.join(", ", cMajorChord.getNoteNames()));
+
+        Chord am = ScaleMaker.minorChord("A");
+        System.out.println(am.getSymbol() + ": " + String.join(", ", am.getNoteNames()));
+
+        Chord g7 = ScaleMaker.chord("G", ChordType.DOMINANT_7);
+        System.out.println(g7.getSymbol() + ": " + String.join(", ", g7.getNoteNames()));
+
+        // ==================== STUFENAKKORDE ====================
+        System.out.println("\n--- Stufenakkorde C-Dur ---");
+
+        String[] diatonicChords = ScaleMaker.getDiatonicChordSymbols(cDur);
+        for (int i = 0; i < diatonicChords.length; i++) {
+            System.out.println("Stufe " + (i + 1) + ": " + diatonicChords[i]);
         }
-        System.out.println();
 
-        // 8. Intervall-Tabelle
-        System.out.println("=== ALLE INTERVALLE ===\n");
-        Interval.printIntervals();
+        // ==================== FREQUENZ-BERECHNUNG ====================
+        System.out.println("\n--- Frequenz-Berechnung ---");
+
+        double freq = ScaleMaker.calculateFrequency(0);  // A = 440 Hz
+        System.out.println("A (0 Halbtöne): " + freq + " Hz");
+
+        freq = ScaleMaker.calculateFrequency(-9);  // C unter A
+        System.out.println("C (-9 Halbtöne): " + String.format("%.2f", freq) + " Hz");
+
+        freq = ScaleMaker.applyInterval(264.0, IntervalType.PERFECT_FIFTH);
+        System.out.println("C + Quinte: " + freq + " Hz (G)");
+
+        // ==================== VERFÜGBARE TYPEN ====================
+        System.out.println("\n--- Verfügbare Skalen ---");
+        ScaleMaker.printAvailableScales();
+
+        System.out.println("\n--- Verfügbare Akkorde ---");
+        ScaleMaker.printAvailableChords();
     }
 }

@@ -1,8 +1,35 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import static java.util.Map.entry;
 
+/**
+ * Repräsentiert einen musikalischen Akkord.
+ *
+ * <p>Ein Akkord besteht aus einem Grundton und einer Kombination von Intervallen,
+ * die den Akkordtyp definieren (z.B. Dur-Dreiklang, Moll-Septakkord).</p>
+ *
+ * <h2>Beispiel:</h2>
+ * <pre>{@code
+ * MusicalNote c = new MusicalNote("C");
+ *
+ * // Dur-Dreiklang
+ * Chord cDur = new Chord(c, ChordType.MAJOR);
+ *
+ * // Dominantseptakkord
+ * Chord g7 = new Chord(new MusicalNote("G"), ChordType.DOMINANT_7);
+ *
+ * // Akkordtöne abrufen
+ * List<MusicalNote> notes = cDur.getNotes();
+ * double[] frequencies = cDur.getFrequencies();
+ * String symbol = cDur.getSymbol(); // "C"
+ * }</pre>
+ *
+ * @see ChordType
+ * @see MusicalNote
+ * @see Scale#getTriadOnDegree(int)
+ */
 public class Chord {
 
     private MusicalNote root;
@@ -11,11 +38,9 @@ public class Chord {
     private Interval[] intervals;
     private List<MusicalNote> notes = new ArrayList<>();
 
-    // Chromatische Skala für Notenberechnung
     private static final String[] CHROMATIC_SHARP = {"C", "Cis", "D", "Dis", "E", "F", "Fis", "G", "Gis", "A", "B", "H"};
     private static final String[] CHROMATIC_FLAT = {"C", "Des", "D", "Es", "E", "F", "Ges", "G", "As", "A", "B", "H"};
 
-    // Mapping: Intervall-Shortname -> Halbtöne
     private static final Map<String, Integer> INTERVAL_SEMITONES = Map.ofEntries(
         entry("P", 0),
         entry("Sg1", 2), entry("Sg2", 2),
@@ -33,6 +58,13 @@ public class Chord {
         entry("Ok", 12)
     );
 
+    /**
+     * Erstellt einen neuen Akkord.
+     *
+     * @param root Der Grundton des Akkords
+     * @param type Der Typ des Akkords (z.B. MAJOR, MINOR, DOMINANT_7)
+     * @throws Exception wenn der Akkord nicht erstellt werden kann
+     */
     public Chord(MusicalNote root, ChordType type) throws Exception {
         this.root = root;
         this.type = type;
@@ -101,6 +133,9 @@ public class Chord {
         return (int) Math.round(12 * Math.log(interval.proportion) / Math.log(2));
     }
 
+    /**
+     * Gibt den Akkord formatiert auf der Konsole aus.
+     */
     public void print() {
         System.out.println("Akkord: " + symbol + " (" + type.getDisplayName() + ")");
         System.out.println("Töne:");
@@ -113,11 +148,20 @@ public class Chord {
         System.out.println();
     }
 
-    // Getter
+    /**
+     * Gibt alle Töne des Akkords zurück.
+     *
+     * @return Unveränderliche Liste aller Akkordtöne
+     */
     public List<MusicalNote> getNotes() {
-        return notes;
+        return Collections.unmodifiableList(notes);
     }
 
+    /**
+     * Gibt alle Frequenzen des Akkords als Array zurück.
+     *
+     * @return Array mit Frequenzen in Hz
+     */
     public double[] getFrequencies() {
         double[] freqs = new double[notes.size()];
         for (int i = 0; i < notes.size(); i++) {
@@ -126,35 +170,136 @@ public class Chord {
         return freqs;
     }
 
+    /**
+     * Gibt alle Notennamen des Akkords als Array zurück.
+     *
+     * @return Array mit Notennamen (z.B. ["C", "E", "G"])
+     */
+    public String[] getNoteNames() {
+        String[] names = new String[notes.size()];
+        for (int i = 0; i < notes.size(); i++) {
+            names[i] = notes.get(i).letter;
+        }
+        return names;
+    }
+
+    /**
+     * Gibt das Akkordsymbol zurück (z.B. "C", "Am", "G7", "Hdim").
+     *
+     * @return Das Akkordsymbol
+     */
     public String getSymbol() {
         return symbol;
     }
 
+    /**
+     * Gibt den Akkordtyp zurück.
+     *
+     * @return Der ChordType dieses Akkords
+     */
     public ChordType getType() {
         return type;
     }
 
+    /**
+     * Gibt den Grundton des Akkords zurück.
+     *
+     * @return Der Grundton als MusicalNote
+     */
     public MusicalNote getRoot() {
         return root;
     }
 
-    // Factory-Methoden
+    /**
+     * Gibt die Anzahl der Töne im Akkord zurück.
+     *
+     * @return Anzahl der Töne (3 für Dreiklänge, 4 für Septakkorde)
+     */
+    public int size() {
+        return notes.size();
+    }
+
+    /**
+     * Prüft, ob der Akkord ein Dreiklang ist.
+     *
+     * @return true wenn der Akkord 3 Töne hat
+     */
+    public boolean isTriad() {
+        return notes.size() == 3;
+    }
+
+    /**
+     * Prüft, ob der Akkord ein Septakkord ist.
+     *
+     * @return true wenn der Akkord 4 Töne hat
+     */
+    public boolean isSeventhChord() {
+        return notes.size() == 4;
+    }
+
+    /**
+     * Gibt eine String-Repräsentation des Akkords zurück.
+     *
+     * @return Das Akkordsymbol
+     */
+    @Override
+    public String toString() {
+        return symbol;
+    }
+
+    // ==================== FACTORY-METHODEN ====================
+
+    /**
+     * Erstellt einen Dur-Dreiklang.
+     *
+     * @param root Der Grundton
+     * @return Der Dur-Dreiklang
+     * @throws Exception wenn der Akkord nicht erstellt werden kann
+     */
     public static Chord major(MusicalNote root) throws Exception {
         return new Chord(root, ChordType.MAJOR);
     }
 
+    /**
+     * Erstellt einen Moll-Dreiklang.
+     *
+     * @param root Der Grundton
+     * @return Der Moll-Dreiklang
+     * @throws Exception wenn der Akkord nicht erstellt werden kann
+     */
     public static Chord minor(MusicalNote root) throws Exception {
         return new Chord(root, ChordType.MINOR);
     }
 
+    /**
+     * Erstellt einen verminderten Dreiklang.
+     *
+     * @param root Der Grundton
+     * @return Der verminderte Dreiklang
+     * @throws Exception wenn der Akkord nicht erstellt werden kann
+     */
     public static Chord diminished(MusicalNote root) throws Exception {
         return new Chord(root, ChordType.DIMINISHED);
     }
 
+    /**
+     * Erstellt einen übermäßigen Dreiklang.
+     *
+     * @param root Der Grundton
+     * @return Der übermäßige Dreiklang
+     * @throws Exception wenn der Akkord nicht erstellt werden kann
+     */
     public static Chord augmented(MusicalNote root) throws Exception {
         return new Chord(root, ChordType.AUGMENTED);
     }
 
+    /**
+     * Erstellt einen Dominantseptakkord.
+     *
+     * @param root Der Grundton
+     * @return Der Dominantseptakkord
+     * @throws Exception wenn der Akkord nicht erstellt werden kann
+     */
     public static Chord dominant7(MusicalNote root) throws Exception {
         return new Chord(root, ChordType.DOMINANT_7);
     }
