@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(javac:*)",
-      "Bash(java:*)"
+      "Bash(java:*)",
+      "Bash(jar cvf:*)",
+      "Bash(javadoc:*)",
+      "Bash(git add:*)",
+      "Bash(git rm:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd complete API with JavaDoc documentation\n\n- Add ScaleMaker facade class as main entry point\n- Add full JavaDoc documentation to all public classes\n- Remove unused Helper class\n- Add README.md for GitHub presentation\n- Improve Chord and Scale classes with additional getters\n- Update JAR with all changes\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push)"
     ]
   }
 }
