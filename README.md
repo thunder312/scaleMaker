@@ -19,6 +19,99 @@ javac -cp scalemaker.jar YourProgram.java
 java -cp scalemaker.jar;. YourProgram
 ```
 
+## Verwendung als Plugin
+
+ScaleMaker kann als Plugin in ein Hauptprogramm eingebunden werden. Die Entdeckung
+erfolgt automatisch über den Java [ServiceLoader](https://docs.oracle.com/en/java/docs/api/java.base/java/util/ServiceLoader.html)-Mechanismus (SPI).
+
+### Plugin einbinden
+
+`scalemaker.jar` in den Classpath des Hauptprogramms legen – fertig. Der ServiceLoader
+findet die Plugin-Implementierung automatisch über `META-INF/services/ScaleMakerPlugin`.
+
+### Plugin laden und initialisieren
+
+```java
+import java.util.ServiceLoader;
+
+// Plugin entdecken
+ServiceLoader<ScaleMakerPlugin> loader = ServiceLoader.load(ScaleMakerPlugin.class);
+ScaleMakerPlugin plugin = loader.findFirst()
+    .orElseThrow(() -> new RuntimeException("ScaleMaker-Plugin nicht gefunden"));
+
+// Plugin starten
+plugin.initialize();
+
+// API beziehen
+ScaleMakerApi api = plugin.getApi();
+
+// ... API verwenden (siehe unten) ...
+
+// Plugin beim Programmende herunterfahren
+plugin.shutdown();
+```
+
+### Mehrere Plugins verwalten
+
+Wenn das Hauptprogramm mehrere Plugins unterstützt, empfiehlt sich eine Liste:
+
+```java
+List<ScaleMakerPlugin> plugins = new ArrayList<>();
+ServiceLoader.load(ScaleMakerPlugin.class).forEach(plugins::add);
+
+for (ScaleMakerPlugin p : plugins) {
+    System.out.println("Gefunden: " + p.getName() + " v" + p.getVersion());
+    p.initialize();
+}
+```
+
+### Plugin-Metadaten
+
+```java
+plugin.getName();        // "ScaleMaker"
+plugin.getVersion();     // "1.0.0"
+plugin.getDescription(); // "Musiktheorie-Bibliothek für Tonleitern, Akkorde und Intervalle"
+```
+
+### API verwenden
+
+Nach `initialize()` stellt `plugin.getApi()` alle Musik-Theorie-Funktionen bereit:
+
+```java
+ScaleMakerApi api = plugin.getApi();
+
+// Tonleitern
+Scale cDur   = api.majorScale("C");
+Scale aMinor = api.minorScale("A");
+Scale dDor   = api.scale("D", ScaleType.DORIAN);
+
+// Akkorde
+Chord gDom7  = api.chord("G", ChordType.DOMINANT_7);
+Chord cMaj   = api.majorChord("C");
+
+// Stufenakkorde einer Tonleiter
+Chord[]  akkorde  = api.getDiatonicChords(cDur);
+String[] symbole  = api.getDiatonicChordSymbols(cDur);
+// ["C", "Dm", "Em", "F", "G", "Am", "Hdim"]
+
+// Frequenzberechnungen
+double freq = api.applyInterval(264.0, IntervalType.PERFECT_FIFTH); // 396.0 Hz
+double a4   = api.calculateFrequency(0);                            // 440.0 Hz
+
+// Verfügbare Typen abfragen
+ScaleType[]    skalen    = api.getAvailableScaleTypes();   // 14 Typen
+ChordType[]    akkordtyp = api.getAvailableChordTypes();   // 12 Typen
+IntervalType[] intervall = api.getAvailableIntervalTypes(); // 28 Typen
+```
+
+### Plugin-Interfaces
+
+| Interface / Klasse | Beschreibung |
+|---|---|
+| `ScaleMakerPlugin` | Lifecycle-Interface: `initialize()`, `shutdown()`, `getApi()` |
+| `ScaleMakerApi` | Alle Musik-Theorie-Methoden (instanzbasiert, testbar) |
+| `ScaleMakerPluginImpl` | Konkrete Implementierung (wird vom ServiceLoader instanziiert) |
+
 ## Quick Start
 
 ```java
@@ -139,17 +232,30 @@ Frequencies are calculated using **just intonation** ratios for pure intervals:
 
 ## Building from Source
 
+```bat
+build.bat
+```
+
+Das Skript kompiliert alle Klassen, kopiert die ServiceLoader-Registrierung
+(`META-INF/services/ScaleMakerPlugin`) ins `bin/`-Verzeichnis und erstellt das JAR.
+
+Manuell:
+
 ```bash
-# Compile
+# Kompilieren
 javac -encoding UTF-8 -d bin *.java
 
-# Create JAR
+# META-INF für ServiceLoader kopieren
+mkdir bin\META-INF\services
+copy META-INF\services\ScaleMakerPlugin bin\META-INF\services\
+
+# JAR erstellen (inkl. META-INF)
 jar cvf bin/scalemaker.jar -C bin .
 
-# Generate JavaDoc
+# JavaDoc generieren
 javadoc -encoding UTF-8 -charset UTF-8 -d doc -author -version *.java
 
-# Run demo
+# Demo ausführen
 java -cp bin Main
 ```
 
